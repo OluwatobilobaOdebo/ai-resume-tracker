@@ -41,6 +41,80 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
   "REJECTED",
 ];
 
+const STATUS_CONFIG: Record<ApplicationStatus, { label: string; color: string }> = {
+  SAVED: { label: "Saved", color: "status-saved" },
+  APPLIED: { label: "Applied", color: "status-applied" },
+  PHONE_SCREEN: { label: "Phone Screen", color: "status-phone_screen" },
+  INTERVIEW: { label: "Interview", color: "status-interview" },
+  OFFER: { label: "Offer", color: "status-offer" },
+  REJECTED: { label: "Rejected", color: "status-rejected" },
+};
+
+// Icons as SVG components
+const PlusIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+);
+
+const ChevronDownIcon = ({ className = "" }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
+const SparklesIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"></path>
+  </svg>
+);
+
+const CopyIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+  </svg>
+);
+
+const DownloadIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+);
+
+const ExternalLinkIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+    <polyline points="15 3 21 3 21 9"></polyline>
+    <line x1="10" y1="14" x2="21" y2="3"></line>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+  </svg>
+);
+
+const DuplicateIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="8" y="8" width="12" height="12" rx="2"></rect>
+    <path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"></path>
+  </svg>
+);
+
+
+const CheckCircleIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+  </svg>
+);
+
 export default function Home() {
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,9 +132,10 @@ export default function Home() {
   const [notes, setNotes] = useState("");
 
   // Filter state
-  const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "ALL">(
-    "ALL"
-  );
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "ALL">("ALL");
+
+  // Form visibility state
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   // AI resume tailoring state
   const [selectedJobId, setSelectedJobId] = useState<string>("");
@@ -72,15 +147,11 @@ export default function Home() {
   const [aiError, setAiError] = useState<string | null>(null);
 
   // Saved tailored resumes per job (history)
-  const [savedTailoredByJob, setSavedTailoredByJob] = useState<
-    Record<string, TailoredVersion[]>
-  >({});
+  const [savedTailoredByJob, setSavedTailoredByJob] = useState<Record<string, TailoredVersion[]>>({});
 
   // Version selection / naming UI state
   const [versionLabel, setVersionLabel] = useState("");
-  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
-    null
-  );
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
 
   const [copyStatus, setCopyStatus] = useState<"" | "copied" | "error">("");
 
@@ -98,9 +169,9 @@ export default function Home() {
 
         const data = await res.json();
         setJobs(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        setError(err.message ?? "Something went wrong");
+        setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
         setIsLoading(false);
       }
@@ -110,7 +181,6 @@ export default function Home() {
   }, []);
 
   // Load saved tailored resumes from localStorage on mount
-  // Load saved tailored resumes from localStorage on mount (handle old formats)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = window.localStorage.getItem("savedTailoredResumes");
@@ -120,7 +190,7 @@ export default function Home() {
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return;
 
-      const anyObj = parsed as Record<string, any>;
+      const anyObj = parsed as Record<string, unknown>;
       const firstVal = Object.values(anyObj)[0];
 
       // Case 1: newest format – map<string, TailoredVersion[]>
@@ -128,23 +198,23 @@ export default function Home() {
         Array.isArray(firstVal) &&
         firstVal[0] &&
         typeof firstVal[0] === "object" &&
-        "resumeContent" in firstVal[0]
+        "resumeContent" in (firstVal[0] as object)
       ) {
         setSavedTailoredByJob(anyObj as Record<string, TailoredVersion[]>);
         return;
       }
 
-      // Case 2: previous "content" format – map<string, { id, label, content, createdAt }[]>
+      // Case 2: previous "content" format
       if (
         Array.isArray(firstVal) &&
         firstVal[0] &&
         typeof firstVal[0] === "object" &&
-        "content" in firstVal[0]
+        "content" in (firstVal[0] as object)
       ) {
         const migrated: Record<string, TailoredVersion[]> = {};
 
         Object.entries(anyObj).forEach(([jobId, versions]) => {
-          migrated[jobId] = (versions as any[]).map((v, idx) => ({
+          migrated[jobId] = (versions as { id?: string; label?: string; content?: string; coverLetterContent?: string; createdAt?: string }[]).map((v, idx) => ({
             id: v.id ?? `legacy-${jobId}-${idx}`,
             label: v.label ?? `Version ${idx + 1}`,
             resumeContent: v.content ?? "",
@@ -159,19 +229,17 @@ export default function Home() {
 
       // Case 3: very old format – map<string, string>
       const migrated: Record<string, TailoredVersion[]> = {};
-      Object.entries(anyObj as Record<string, string>).forEach(
-        ([jobId, content]) => {
-          migrated[jobId] = [
-            {
-              id: `legacy-${jobId}`,
-              label: "Imported version",
-              resumeContent: content ?? "",
-              coverLetterContent: "",
-              createdAt: new Date().toISOString(),
-            },
-          ];
-        }
-      );
+      Object.entries(anyObj as Record<string, string>).forEach(([jobId, content]) => {
+        migrated[jobId] = [
+          {
+            id: `legacy-${jobId}`,
+            label: "Imported version",
+            resumeContent: content ?? "",
+            coverLetterContent: "",
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      });
       setSavedTailoredByJob(migrated);
     } catch (err) {
       console.error("Failed to load savedTailoredResumes:", err);
@@ -181,10 +249,7 @@ export default function Home() {
   // Whenever savedTailoredByJob changes, persist to localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(
-      "savedTailoredResumes",
-      JSON.stringify(savedTailoredByJob)
-    );
+    window.localStorage.setItem("savedTailoredResumes", JSON.stringify(savedTailoredByJob));
   }, [savedTailoredByJob]);
 
   const handleCreateJob = async (e: React.FormEvent) => {
@@ -228,15 +293,16 @@ export default function Home() {
       setStatus("SAVED");
       setJobDescription("");
       setNotes("");
-    } catch (err: any) {
+      setIsFormOpen(false);
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message ?? "Something went wrong");
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ---- New: status counts & filtered list ----
+  // Status counts & filtered list
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const s of STATUS_OPTIONS) counts[s] = 0;
@@ -256,18 +322,12 @@ export default function Home() {
     [jobs, selectedJobId]
   );
 
-  // ---- Step 9 will plug into this: update status handler ----
-  const handleStatusChange = async (
-    jobId: string,
-    newStatus: ApplicationStatus
-  ) => {
+  const handleStatusChange = async (jobId: string, newStatus: ApplicationStatus) => {
     try {
       setError(null);
       // Optimistic update
       setJobs((prev) =>
-        prev.map((job) =>
-          job.id === jobId ? { ...job, status: newStatus } : job
-        )
+        prev.map((job) => (job.id === jobId ? { ...job, status: newStatus } : job))
       );
 
       const res = await fetch(`/api/jobs/${jobId}`, {
@@ -282,7 +342,6 @@ export default function Home() {
     } catch (err) {
       console.error(err);
       setError("Could not update status. Please try again.");
-      // (You could refetch here if you want strict consistency)
     }
   };
 
@@ -323,13 +382,10 @@ export default function Home() {
 
       const output = (data.tailoredResume as string) ?? "";
       setTailoredResume(output);
-      // draft only, not yet saved
       setSelectedVersionId(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setAiError(
-        err?.message ?? "Something went wrong while generating your resume."
-      );
+      setAiError(err instanceof Error ? err.message : "Something went wrong while generating your resume.");
     } finally {
       setIsGenerating(false);
     }
@@ -368,13 +424,9 @@ export default function Home() {
       }
 
       setTailoredCoverLetter(data.coverLetter ?? "");
-      // This is draft; user can tweak, then Save Version to persist
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setAiError(
-        err?.message ??
-          "Something went wrong while generating your cover letter."
-      );
+      setAiError(err instanceof Error ? err.message : "Something went wrong while generating your cover letter.");
     } finally {
       setIsGeneratingCover(false);
     }
@@ -449,10 +501,7 @@ export default function Home() {
       return;
     }
 
-    const mime =
-      format === "txt"
-        ? "text/plain;charset=utf-8"
-        : "text/markdown;charset=utf-8";
+    const mime = format === "txt" ? "text/plain;charset=utf-8" : "text/markdown;charset=utf-8";
 
     const blob = new Blob([tailoredResume], { type: mime });
     const url = URL.createObjectURL(blob);
@@ -498,10 +547,7 @@ export default function Home() {
       return;
     }
 
-    const mime =
-      format === "txt"
-        ? "text/plain;charset=utf-8"
-        : "text/markdown;charset=utf-8";
+    const mime = format === "txt" ? "text/plain;charset=utf-8" : "text/markdown;charset=utf-8";
 
     const blob = new Blob([tailoredCoverLetter], { type: mime });
     const url = URL.createObjectURL(blob);
@@ -571,7 +617,6 @@ export default function Home() {
         [jobId]: nextHistory,
       };
 
-      // Clean up selection if we deleted the active one
       if (jobId === selectedJobId && versionId === selectedVersionId) {
         if (nextHistory.length > 0) {
           const latest = nextHistory[nextHistory.length - 1];
@@ -620,50 +665,263 @@ export default function Home() {
     setCopyStatus("");
   };
 
-  return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold">
-              AI Resume Tailor &amp; Job Tracker
-            </h1>
-            <p className="text-sm text-slate-400">
-              Track your applications and generate tailored resumes &amp; cover
-              letters (AI features coming next).
-            </p>
-          </div>
+  const interviewingCount = statusCounts.INTERVIEW + statusCounts.PHONE_SCREEN + statusCounts.OFFER;
 
-          {/* Stats + filter */}
-          <div className="flex flex-col items-start gap-3 md:items-end">
-            <div className="flex gap-4 text-sm text-slate-300">
-              <div>
-                <span className="block text-xs uppercase text-slate-500">
-                  Total
-                </span>
-                <span className="text-lg font-medium">{jobs.length}</span>
+  return (
+    <main className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
+      {/* Hero Header */}
+      <header className="border-b" style={{ borderColor: "var(--border-light)", background: "var(--background-elevated)" }}>
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            {/* Logo & Title */}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <h1 
+                  className="text-3xl font-bold tracking-tight"
+                  style={{ 
+                    background: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  Resume<span style={{ fontWeight: 800 }}>AI</span>
+                </h1>
+                <div 
+                  className="absolute -right-2 -top-1 h-2 w-2 rounded-full animate-pulse"
+                  style={{ background: "linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)" }}
+                />
               </div>
-              <div>
-                <span className="block text-xs uppercase text-slate-500">
-                  Interviewing
-                </span>
-                <span className="text-lg font-medium">
-                  {statusCounts.INTERVIEW +
-                    statusCounts.PHONE_SCREEN +
-                    statusCounts.OFFER}
-                </span>
-              </div>
+              <div 
+                className="ml-3 h-8 w-px"
+                style={{ background: "var(--border-light)" }}
+              />
+              <p className="text-sm max-w-[200px]" style={{ color: "var(--foreground-muted)" }}>
+                Smart job tracking & AI-powered resume tailoring
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-2 text-xs">
+            {/* Stats Cards */}
+            <div className="flex gap-4">
+              <div className="stat-card min-w-[120px]">
+                <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--foreground-subtle)" }}>
+                  Total Jobs
+                </p>
+                <p className="mt-1 text-3xl font-semibold" style={{ color: "var(--foreground)" }}>
+                  {jobs.length}
+                </p>
+              </div>
+              <div className="stat-card min-w-[120px]">
+                <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--foreground-subtle)" }}>
+                  Interviewing
+                </p>
+                <p className="mt-1 text-3xl font-semibold" style={{ color: "var(--status-interview)" }}>
+                  {interviewingCount}
+                </p>
+              </div>
+              <div className="stat-card min-w-[120px]">
+                <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--foreground-subtle)" }}>
+                  Offers
+                </p>
+                <p className="mt-1 text-3xl font-semibold" style={{ color: "var(--status-offer)" }}>
+                  {statusCounts.OFFER}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-7xl px-6 py-8 flex-1">
+        {/* Error Banner */}
+        {error && (
+          <div 
+            className="mb-6 animate-fade-in rounded-lg border px-4 py-3 text-sm"
+            style={{ 
+              background: "rgba(239, 68, 68, 0.08)", 
+              borderColor: "rgba(239, 68, 68, 0.2)",
+              color: "#DC2626"
+            }}
+          >
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
+        {/* Main Content Grid */}
+        <div className="grid gap-8 xl:grid-cols-[1fr_400px]">
+          {/* Left Column - Jobs Section */}
+          <div className="space-y-6">
+            {/* Actions Bar */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>
+                Your Applications
+              </h2>
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(!isFormOpen)}
+                className="btn-primary"
+              >
+                <PlusIcon />
+                Add New Job
+              </button>
+            </div>
+
+            {/* Collapsible Add Job Form */}
+            {isFormOpen && (
+              <div className="card-elevated animate-scale-in p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
+                    New Job Application
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setIsFormOpen(false)}
+                    className="btn-ghost"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <form onSubmit={handleCreateJob} className="grid gap-5 md:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                      Company Name <span style={{ color: "var(--status-rejected)" }}>*</span>
+                    </label>
+                    <input
+                      className="input-field"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      required
+                      placeholder="e.g., Google, Apple, Microsoft"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                      Job Title <span style={{ color: "var(--status-rejected)" }}>*</span>
+                    </label>
+                    <input
+                      className="input-field"
+                      value={jobTitle}
+                      onChange={(e) => setJobTitle(e.target.value)}
+                      required
+                      placeholder="e.g., Senior Software Engineer"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                      Job Link
+                    </label>
+                    <input
+                      className="input-field"
+                      value={jobLink}
+                      onChange={(e) => setJobLink(e.target.value)}
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                      Location
+                    </label>
+                    <input
+                      className="input-field"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="Remote, San Francisco, NYC..."
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                      Salary Range
+                    </label>
+                    <input
+                      className="input-field"
+                      value={salaryRange}
+                      onChange={(e) => setSalaryRange(e.target.value)}
+                      placeholder="$120k – $180k"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                      Status
+                    </label>
+                    <select
+                      className="select-field"
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
+                    >
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s} value={s}>
+                          {STATUS_CONFIG[s].label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                      Job Description <span style={{ color: "var(--status-rejected)" }}>*</span>
+                    </label>
+                    <textarea
+                      className="textarea-field h-32"
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      required
+                      placeholder="Paste the full job description here for AI tailoring..."
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                      Notes
+                    </label>
+                    <textarea
+                      className="textarea-field h-20"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Recruiter contacts, interview notes, reminders..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 md:col-span-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsFormOpen(false)}
+                      className="btn-ghost"
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={isSubmitting} className="btn-primary">
+                      {isSubmitting ? (
+                        <>
+                          <span className="spinner"></span>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircleIcon />
+                          Save Job
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Filter Tabs */}
+            <div 
+              className="flex flex-wrap gap-2 rounded-xl p-2"
+              style={{ background: "var(--background-secondary)" }}
+            >
               <button
                 type="button"
                 onClick={() => setStatusFilter("ALL")}
-                className={`rounded-full px-3 py-1 ${
-                  statusFilter === "ALL"
-                    ? "bg-cyan-500 text-slate-950"
-                    : "bg-slate-800 text-slate-200 hover:bg-slate-700"
-                }`}
+                className={`tab-item ${statusFilter === "ALL" ? "active" : ""}`}
               >
                 All ({jobs.length})
               </button>
@@ -672,479 +930,413 @@ export default function Home() {
                   key={s}
                   type="button"
                   onClick={() => setStatusFilter(s)}
-                  className={`rounded-full px-3 py-1 ${
-                    statusFilter === s
-                      ? "bg-cyan-500 text-slate-950"
-                      : "bg-slate-800 text-slate-200 hover:bg-slate-700"
-                  }`}
+                  className={`tab-item ${statusFilter === s ? "active" : ""}`}
                 >
-                  {s.replace("_", " ")} ({statusCounts[s] ?? 0})
+                  {STATUS_CONFIG[s].label} ({statusCounts[s] ?? 0})
                 </button>
               ))}
             </div>
-          </div>
-        </header>
 
-        {error && (
-          <div className="mb-6 rounded-md border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm text-red-200">
-            {error}
-          </div>
-        )}
-
-        {/* New job form */}
-        <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-lg">
-          <h2 className="mb-4 text-lg font-semibold">New Job Application</h2>
-
-          <form
-            onSubmit={handleCreateJob}
-            className="grid gap-4 md:grid-cols-2"
-          >
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-slate-300">Company Name *</label>
-              <input
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-slate-300">Job Title *</label>
-              <input
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-slate-300">Job Link</label>
-              <input
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={jobLink}
-                onChange={(e) => setJobLink(e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-slate-300">Location</label>
-              <input
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Remote, NYC, etc."
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-slate-300">Salary Range</label>
-              <input
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={salaryRange}
-                onChange={(e) => setSalaryRange(e.target.value)}
-                placeholder="$120k – $150k"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-slate-300">Status</label>
-              <select
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
-              >
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s.replace("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1 md:col-span-2">
-              <label className="text-sm text-slate-300">
-                Job Description *
-              </label>
-              <textarea
-                className="h-28 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                required
-                placeholder="Paste the job description here..."
-              />
-            </div>
-
-            <div className="flex flex-col gap-1 md:col-span-2">
-              <label className="text-sm text-slate-300">Notes</label>
-              <textarea
-                className="h-20 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Recruiter name, interview dates, reminders..."
-              />
-            </div>
-
-            <div className="md:col-span-2 flex justify-end">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex items-center rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSubmitting ? "Saving..." : "Add Job"}
-              </button>
-            </div>
-          </form>
-        </section>
-
-        {/* Job list / table */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-lg">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Your Applications</h2>
-          </div>
-
-          {isLoading ? (
-            <p className="text-sm text-slate-400">Loading applications...</p>
-          ) : filteredJobs.length === 0 ? (
-            <p className="text-sm text-slate-400">
-              No applications for this filter. Try adding one or switching the
-              filter above.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-800 text-xs uppercase text-slate-400">
-                    <th className="px-3 py-2">Company</th>
-                    <th className="px-3 py-2">Role</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="hidden px-3 py-2 md:table-cell">Location</th>
-                    <th className="hidden px-3 py-2 md:table-cell">Salary</th>
-                    <th className="hidden px-3 py-2 md:table-cell">Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredJobs.map((job) => (
-                    <tr
-                      key={job.id}
-                      className="border-b border-slate-800/60 last:border-none hover:bg-slate-900/80"
-                    >
-                      <td className="px-3 py-2">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-slate-100">
-                            {job.companyName}
-                          </span>
-                          {job.jobLink && (
-                            <a
-                              href={job.jobLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs text-cyan-400 hover:underline"
-                            >
-                              Job posting
-                            </a>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2">{job.jobTitle}</td>
-                      <td className="px-3 py-2">
-                        <select
-                          value={job.status}
-                          onChange={(e) =>
-                            handleStatusChange(
-                              job.id,
-                              e.target.value as ApplicationStatus
-                            )
-                          }
-                          className="rounded-full bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-100 outline-none hover:bg-slate-700"
+            {/* Job List */}
+            <div className="card-elevated overflow-hidden">
+              {isLoading ? (
+                <div className="p-8">
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="animate-shimmer h-16 rounded-lg"></div>
+                    ))}
+                  </div>
+                </div>
+              ) : filteredJobs.length === 0 ? (
+                <div className="empty-state">
+                  <div 
+                    className="empty-state-icon"
+                    style={{ 
+                      background: "linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)",
+                      border: "1px dashed var(--border-medium)"
+                    }}
+                  >
+                    <PlusIcon />
+                  </div>
+                  <h3 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
+                    No applications yet
+                  </h3>
+                  <p className="mt-1 text-sm" style={{ color: "var(--foreground-muted)" }}>
+                    {statusFilter === "ALL"
+                      ? "Click 'Add New Job' to start tracking your applications"
+                      : `No jobs with "${STATUS_CONFIG[statusFilter as ApplicationStatus].label}" status`}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ background: "var(--background-secondary)" }}>
+                        <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--foreground-subtle)" }}>
+                          Company
+                        </th>
+                        <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--foreground-subtle)" }}>
+                          Role
+                        </th>
+                        <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--foreground-subtle)" }}>
+                          Status
+                        </th>
+                        <th className="hidden px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide md:table-cell" style={{ color: "var(--foreground-subtle)" }}>
+                          Location
+                        </th>
+                        <th className="hidden px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide lg:table-cell" style={{ color: "var(--foreground-subtle)" }}>
+                          Salary
+                        </th>
+                        <th className="hidden px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide lg:table-cell" style={{ color: "var(--foreground-subtle)" }}>
+                          Added
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredJobs.map((job, index) => (
+                        <tr
+                          key={job.id}
+                          className={`table-row animate-fade-in stagger-${Math.min(index + 1, 5)}`}
                         >
-                          {STATUS_OPTIONS.map((s) => (
-                            <option key={s} value={s}>
-                              {s.replace("_", " ")}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="hidden px-3 py-2 md:table-cell">
-                        {job.location || "-"}
-                      </td>
-                      <td className="hidden px-3 py-2 md:table-cell">
-                        {job.salaryRange || "-"}
-                      </td>
-                      <td className="hidden px-3 py-2 text-xs text-slate-400 md:table-cell">
-                        {new Date(job.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-        {/* AI Resume Tailor */}
-        <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-lg">
-          <h2 className="mb-2 text-lg font-semibold">Tailor Resume with AI</h2>
-          <p className="mb-4 text-sm text-slate-400">
-            Choose a job application, paste your base resume, and let AI tailor
-            it to that specific role.
-          </p>
-
-          {aiError && (
-            <div className="mb-4 rounded-md border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm text-red-200">
-              {aiError}
-            </div>
-          )}
-
-          <form onSubmit={handleGenerateTailoredResume} className="space-y-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-slate-300">
-                Target Job Application
-              </label>
-              <select
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={selectedJobId}
-                onChange={(e) => setSelectedJobId(e.target.value)}
-              >
-                <option value="">Select a job…</option>
-                {jobs.map((job) => (
-                  <option key={job.id} value={job.id}>
-                    {job.companyName} — {job.jobTitle}
-                  </option>
-                ))}
-              </select>
-              {selectedJob && (
-                <p className="text-xs text-slate-500">
-                  Using job description for{" "}
-                  <span className="font-medium">
-                    {selectedJob.companyName} — {selectedJob.jobTitle}
-                  </span>
-                  .
-                </p>
+                          <td className="px-5 py-4">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-medium" style={{ color: "var(--foreground)" }}>
+                                {job.companyName}
+                              </span>
+                              {job.jobLink && (
+                                <a
+                                  href={job.jobLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs transition-colors hover:underline"
+                                  style={{ color: "var(--accent-primary)" }}
+                                >
+                                  View posting <ExternalLinkIcon />
+                                </a>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="text-sm" style={{ color: "var(--foreground)" }}>
+                              {job.jobTitle}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <select
+                              value={job.status}
+                              onChange={(e) => handleStatusChange(job.id, e.target.value as ApplicationStatus)}
+                              className={`status-badge cursor-pointer border-none outline-none ${STATUS_CONFIG[job.status].color}`}
+                              style={{ background: "transparent" }}
+                            >
+                              {STATUS_OPTIONS.map((s) => (
+                                <option key={s} value={s}>
+                                  {STATUS_CONFIG[s].label}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="hidden px-5 py-4 md:table-cell">
+                            <span className="text-sm" style={{ color: "var(--foreground-muted)" }}>
+                              {job.location || "—"}
+                            </span>
+                          </td>
+                          <td className="hidden px-5 py-4 lg:table-cell">
+                            <span className="text-sm" style={{ color: "var(--foreground-muted)" }}>
+                              {job.salaryRange || "—"}
+                            </span>
+                          </td>
+                          <td className="hidden px-5 py-4 lg:table-cell">
+                            <span className="text-xs" style={{ color: "var(--foreground-subtle)" }}>
+                              {new Date(job.createdAt).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-slate-300">
-                Your Base Resume (paste text)
-              </label>
-              <textarea
-                className="h-40 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                value={baseResume}
-                onChange={(e) => setBaseResume(e.target.value)}
-                placeholder="Paste your current resume text here..."
-              />
-            </div>
-
-            <div className="flex flex-wrap justify-end gap-3">
-              <button
-                type="submit"
-                disabled={isGenerating}
-                className="inline-flex items-center rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isGenerating ? "Generating…" : "Generate Tailored Resume"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleGenerateCoverLetter}
-                disabled={isGeneratingCover}
-                className="inline-flex items-center rounded-lg bg-purple-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-purple-400 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isGeneratingCover
-                  ? "Generating Cover Letter…"
-                  : "Generate Cover Letter"}
-              </button>
-            </div>
-          </form>
-
-          {/* Save version controls */}
-          <div className="mt-4 flex flex-col gap-3 border-t border-slate-800 pt-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex-1">
-              <label className="mb-1 block text-sm text-slate-300">
-                Save this tailored resume as a version
-              </label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <input
-                  type="text"
-                  className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                  placeholder='e.g. "Phone Screen", "Final Resume", "Internal Referral"'
-                  value={versionLabel}
-                  onChange={(e) => setVersionLabel(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={handleSaveVersion}
-                  disabled={!tailoredResume}
-                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Save Version
-                </button>
-              </div>
-              <p className="mt-1 text-xs text-slate-500">
-                Versions are saved per job locally in your browser.
-              </p>
-            </div>
           </div>
 
-          {(tailoredResume ||
-            (selectedJobId &&
-              (savedTailoredByJob[selectedJobId] ?? []).length > 0)) && (
-            <div className="mt-6 grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-              {/* Output + actions */}
-              <div>
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-slate-100">
-                    Tailored Resume (AI Output)
-                  </h3>
+          {/* Right Column - AI Section */}
+          <div className="space-y-6">
+            <div className="card-elevated p-6">
+              <div className="mb-4 flex items-center gap-3">
+                <div 
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-white"
+                  style={{ background: "linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%)" }}
+                >
+                  <SparklesIcon />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
+                    AI Resume Tailor
+                  </h2>
+                  <p className="text-xs" style={{ color: "var(--foreground-muted)" }}>
+                    Generate job-specific resumes & cover letters
+                  </p>
+                </div>
+              </div>
 
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
+              {aiError && (
+                <div 
+                  className="mb-4 animate-fade-in rounded-lg border px-4 py-3 text-sm"
+                  style={{ 
+                    background: "rgba(239, 68, 68, 0.08)", 
+                    borderColor: "rgba(239, 68, 68, 0.2)",
+                    color: "#DC2626"
+                  }}
+                >
+                  {aiError}
+                </div>
+              )}
+
+              <form onSubmit={handleGenerateTailoredResume} className="space-y-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                    Target Job
+                  </label>
+                  <select
+                    className="select-field"
+                    value={selectedJobId}
+                    onChange={(e) => setSelectedJobId(e.target.value)}
+                  >
+                    <option value="">Select a job application...</option>
+                    {jobs.map((job) => (
+                      <option key={job.id} value={job.id}>
+                        {job.companyName} — {job.jobTitle}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedJob && (
+                    <p className="text-xs" style={{ color: "var(--foreground-subtle)" }}>
+                      Will use job description from {selectedJob.companyName}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                    Your Base Resume
+                  </label>
+                  <textarea
+                    className="textarea-field h-36 font-mono text-xs"
+                    value={baseResume}
+                    onChange={(e) => setBaseResume(e.target.value)}
+                    placeholder="Paste your current resume text here..."
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="submit"
+                    disabled={isGenerating || !selectedJob || !baseResume.trim()}
+                    className="btn-primary w-full justify-center"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <span className="spinner"></span>
+                        Generating Resume...
+                      </>
+                    ) : (
+                      <>
+                        <SparklesIcon />
+                        Generate Tailored Resume
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleGenerateCoverLetter}
+                    disabled={isGeneratingCover || !selectedJob || !baseResume.trim()}
+                    className="btn-secondary w-full justify-center"
+                  >
+                    {isGeneratingCover ? (
+                      <>
+                        <span className="spinner"></span>
+                        Generating Cover Letter...
+                      </>
+                    ) : (
+                      "Generate Cover Letter"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Output Section */}
+            {(tailoredResume || (selectedJobId && (savedTailoredByJob[selectedJobId] ?? []).length > 0)) && (
+              <div className="space-y-4 animate-fade-in">
+                {/* Version Save Controls */}
+                <div className="card p-4">
+                  <label className="mb-2 block text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                    Save as Version
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      className="input-field flex-1"
+                      placeholder="e.g., Final Version, Phone Screen"
+                      value={versionLabel}
+                      onChange={(e) => setVersionLabel(e.target.value)}
+                    />
                     <button
                       type="button"
-                      onClick={handleCopyTailoredResume}
-                      disabled={!tailoredResume}
-                      className="rounded-full border border-slate-600 bg-slate-900 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                      onClick={handleSaveVersion}
+                      disabled={!tailoredResume && !tailoredCoverLetter}
+                      className="btn-primary"
                     >
-                      Copy
+                      Save
                     </button>
+                  </div>
+                  <p className="mt-2 text-xs" style={{ color: "var(--foreground-subtle)" }}>
+                    Versions are stored locally in your browser
+                  </p>
+                </div>
+
+                {/* Tailored Resume Output */}
+                <div className="card p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                      Tailored Resume
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleCopyTailoredResume}
+                        disabled={!tailoredResume}
+                        className="btn-ghost flex items-center gap-1.5 text-xs"
+                      >
+                        <CopyIcon />
+                        {copyStatus === "copied" ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    className="textarea-field h-48 w-full font-mono text-xs"
+                    value={tailoredResume}
+                    onChange={(e) => setTailoredResume(e.target.value)}
+                    placeholder="Your AI-tailored resume will appear here..."
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => handleDownload("txt")}
                       disabled={!tailoredResume}
-                      className="rounded-full border border-slate-600 bg-slate-900 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="btn-ghost flex items-center gap-1.5 text-xs"
                     >
-                      Download .txt
+                      <DownloadIcon /> .txt
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDownload("md")}
                       disabled={!tailoredResume}
-                      className="rounded-full border border-slate-600 bg-slate-900 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="btn-ghost flex items-center gap-1.5 text-xs"
                     >
-                      Download .md
+                      <DownloadIcon /> .md
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDownload("pdf")}
                       disabled={!tailoredResume}
-                      className="rounded-full border border-slate-600 bg-slate-900 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="btn-ghost flex items-center gap-1.5 text-xs"
                     >
-                      Download PDF
+                      <DownloadIcon /> .pdf
                     </button>
-
-                    {copyStatus === "copied" && (
-                      <span className="text-[11px] text-emerald-300">
-                        Copied!
-                      </span>
-                    )}
-                    {copyStatus === "error" && (
-                      <span className="text-[11px] text-red-300">
-                        Failed to copy
-                      </span>
-                    )}
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Tailored Resume (editable)
-                    </label>
-                    <textarea
-                      className="h-40 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                      value={tailoredResume}
-                      onChange={(e) => setTailoredResume(e.target.value)}
-                      placeholder="Generate a tailored resume or paste/edit your own version here..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Tailored Cover Letter (optional, editable)
-                    </label>
-                    <textarea
-                      className="h-32 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                      value={tailoredCoverLetter}
-                      onChange={(e) => setTailoredCoverLetter(e.target.value)}
-                      placeholder="Write or paste a tailored cover letter for this job..."
-                    />
-
-                    <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadCoverLetter("txt")}
-                        disabled={!tailoredCoverLetter}
-                        className="rounded-full border border-slate-600 bg-slate-900 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Download cover letter .txt
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadCoverLetter("md")}
-                        disabled={!tailoredCoverLetter}
-                        className="rounded-full border border-slate-600 bg-slate-900 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Download cover letter .md
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadCoverLetter("pdf")}
-                        disabled={!tailoredCoverLetter}
-                        className="rounded-full border border-slate-600 bg-slate-900 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Download cover letter PDF
-                      </button>
-                    </div>
+                {/* Cover Letter Output */}
+                <div className="card p-4">
+                  <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Cover Letter
+                  </h3>
+                  <textarea
+                    className="textarea-field h-32 w-full font-mono text-xs"
+                    value={tailoredCoverLetter}
+                    onChange={(e) => setTailoredCoverLetter(e.target.value)}
+                    placeholder="Your AI-generated cover letter will appear here..."
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadCoverLetter("txt")}
+                      disabled={!tailoredCoverLetter}
+                      className="btn-ghost flex items-center gap-1.5 text-xs"
+                    >
+                      <DownloadIcon /> .txt
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadCoverLetter("md")}
+                      disabled={!tailoredCoverLetter}
+                      className="btn-ghost flex items-center gap-1.5 text-xs"
+                    >
+                      <DownloadIcon /> .md
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadCoverLetter("pdf")}
+                      disabled={!tailoredCoverLetter}
+                      className="btn-ghost flex items-center gap-1.5 text-xs"
+                    >
+                      <DownloadIcon /> .pdf
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              {/* History sidebar */}
-              <aside className="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
-                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Saved versions for this job
-                </h4>
-                {selectedJobId &&
-                (savedTailoredByJob[selectedJobId] ?? []).length > 0 ? (
-                  <ul className="space-y-2 text-xs">
-                    {(savedTailoredByJob[selectedJobId] ?? []).map((v) => (
-                      <li key={v.id}>
-                        <div className="space-y-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleSelectVersion(selectedJobId, v.id)
-                            }
-                            className={`w-full rounded-md px-3 py-2 text-left transition ${
-                              selectedVersionId === v.id
-                                ? "bg-cyan-500/20 text-cyan-100 border border-cyan-500/60"
-                                : "bg-slate-900 text-slate-200 border border-slate-700 hover:border-cyan-400/60 hover:text-cyan-100"
-                            }`}
-                          >
-                            <div className="flex justify-between gap-2">
-                              <span className="font-medium truncate">
-                                {v.label}
-                              </span>
-                              <span className="text-[10px] text-slate-400">
-                                {new Date(v.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <p className="mt-1 line-clamp-2 text-[11px] text-slate-400">
-                              {v.resumeContent.slice(0, 160)}...
-                            </p>
-                          </button>
-
-                          <div className="flex gap-2 text-[10px]">
+                {/* Saved Versions */}
+                {selectedJobId && (savedTailoredByJob[selectedJobId] ?? []).length > 0 && (
+                  <div className="card p-4">
+                    <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                      Saved Versions
+                    </h3>
+                    <div className="space-y-2">
+                      {(savedTailoredByJob[selectedJobId] ?? []).map((v) => (
+                        <div
+                          key={v.id}
+                          className={`rounded-lg border p-3 transition-all cursor-pointer ${
+                            selectedVersionId === v.id
+                              ? "border-blue-300 bg-blue-50"
+                              : "hover:border-gray-300"
+                          }`}
+                          style={{
+                            borderColor: selectedVersionId === v.id ? "var(--accent-primary)" : "var(--border-light)",
+                            background: selectedVersionId === v.id ? "rgba(37, 99, 235, 0.05)" : "transparent",
+                          }}
+                          onClick={() => handleSelectVersion(selectedJobId, v.id)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                              {v.label}
+                            </span>
+                            <span className="text-xs" style={{ color: "var(--foreground-subtle)" }}>
+                              {new Date(v.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="mt-1 line-clamp-2 text-xs" style={{ color: "var(--foreground-muted)" }}>
+                            {v.resumeContent.slice(0, 100)}...
+                          </p>
+                          <div className="mt-2 flex gap-2">
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDuplicateVersion(selectedJobId, v.id);
                               }}
-                              className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-slate-300 hover:border-cyan-400 hover:text-cyan-200"
+                              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors"
+                              style={{ 
+                                background: "var(--background-secondary)", 
+                                color: "var(--foreground-muted)" 
+                              }}
                             >
-                              Duplicate & tweak
+                              <DuplicateIcon /> Duplicate
                             </button>
                             <button
                               type="button"
@@ -1152,27 +1344,54 @@ export default function Home() {
                                 e.stopPropagation();
                                 handleDeleteVersion(selectedJobId, v.id);
                               }}
-                              className="rounded-md border border-red-700/70 bg-red-900/30 px-2 py-1 text-red-200 hover:border-red-400"
+                              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors"
+                              style={{ 
+                                background: "rgba(239, 68, 68, 0.1)", 
+                                color: "#DC2626" 
+                              }}
                             >
-                              Delete
+                              <TrashIcon /> Delete
                             </button>
                           </div>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-[11px] text-slate-500">
-                    No saved versions yet for this job. Generate a tailored
-                    resume and click{" "}
-                    <span className="font-semibold">Save Version</span>.
-                  </p>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </aside>
-            </div>
-          )}
-        </section>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Footer */}
+      <footer 
+        className="border-t py-3 mt-auto"
+        style={{ borderColor: "var(--border-light)" }}
+      >
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex items-center justify-between text-xs" style={{ color: "var(--foreground-muted)" }}>
+            <div className="flex items-center gap-1">
+              <span>Built with</span>
+              <span className="font-medium" style={{ color: "var(--foreground)" }}>Next.js · React · TypeScript · Tailwind · OpenAI API</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>by</span>
+              <span 
+                className="font-semibold"
+                style={{ 
+                  background: "linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                Oluwatobiloba Odebo
+              </span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
