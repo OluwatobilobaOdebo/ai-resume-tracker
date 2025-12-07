@@ -2,7 +2,7 @@
 
 Track your job applications, generate tailored resumes & cover letters with AI, and keep a versioned history of every change.
 
-Live demo: _[coming soon – add Vercel URL here]_
+Live demo: https://ai-resume-tracker-six.vercel.app/
 
 ---
 
