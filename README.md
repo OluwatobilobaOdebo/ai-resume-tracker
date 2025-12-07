@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Resume Tailor & Job Tracker
 
-## Getting Started
+Track your job applications, generate tailored resumes & cover letters with AI, and keep a versioned history of every change.
 
-First, run the development server:
+Live demo: _[coming soon – add Vercel URL here]_
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Job Tracker
+- Create job applications with:
+  - Company, Job Title, Location
+  - Job Link, Salary Range
+  - Status (`SAVED`, `APPLIED`, `PHONE_SCREEN`, `INTERVIEW`, `OFFER`, `REJECTED`)
+  - Full Job Description & Notes
+- Inline status updates directly from the table.
+- Status filters (All / by status) + small stats (total + interviewing).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### AI Resume Tailoring
+- Pick a job from your list.
+- Paste your base resume once.
+- Generate a tailored resume for that specific job using OpenAI.
+- Edit the AI output inline before saving/exporting.
 
-## Learn More
+### AI Cover Letter Generation
+- Using the same base resume + job description:
+  - Generate a tailored cover letter with OpenAI.
+  - 3–5 short paragraphs, concrete + role-specific.
+  - Fully editable in the UI.
 
-To learn more about Next.js, take a look at the following resources:
+### Version History per Job
+- Save multiple **versions** per job (resume + optional cover letter):
+  - Name them like `"Phone Screen"`, `"Final Resume"`, `"Referral Version"`, etc.
+- Side-panel history for the selected job:
+  - Click a version to load it into the editor.
+  - Duplicate & tweak existing versions.
+  - Delete versions you no longer need.
+- Version data is stored locally in the browser (`localStorage`) so you can experiment freely.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Export & Convenience Tools
+- **Copy to clipboard** for quick pasting into ATS / docs.
+- **Download resume** as:
+  - `.txt`
+  - `.md`
+  - `.pdf` (generated via `jsPDF`)
+- **Download cover letter** as:
+  - `.txt`
+  - `.md`
+  - `.pdf`
+- Clean filenames such as  
+  `apple-data-scientist-tailored-resume.pdf`  
+  `openai-full-stack-engineer-cover-letter.md`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend:** Next.js (App Router) + React + TypeScript
+- **Styling:** Tailwind CSS
+- **Backend:** Next.js API routes
+- **Database:** PostgreSQL (Neon in this project, but any Postgres works)
+- **ORM:** Prisma
+- **AI:** OpenAI API (Node SDK)
+- **PDF Export:** `jspdf`
+- **State & Storage:**
+  - React hooks (`useState`, `useEffect`, `useMemo`)
+  - `localStorage` for version history per job
