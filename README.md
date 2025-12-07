@@ -1,4 +1,4 @@
-# AI Resume Tailor & Job Tracker
+# AI Resume Tailor & Job Tracker (ResumeAI)
 
 Track your job applications, generate tailored resumes & cover letters with AI, and keep a versioned history of every change.
 
