@@ -59,7 +59,7 @@ Live demo: _[coming soon – add Vercel URL here]_
 - **Frontend:** Next.js (App Router) + React + TypeScript
 - **Styling:** Tailwind CSS
 - **Backend:** Next.js API routes
-- **Database:** PostgreSQL (Neon in this project, but any Postgres works)
+- **Database:** PostgreSQL/Neon
 - **ORM:** Prisma
 - **AI:** OpenAI API (Node SDK)
 - **PDF Export:** `jspdf`
